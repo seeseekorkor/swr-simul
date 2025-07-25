@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>소환수 배치 시뮬레이션</title>
     <style>
+        /*
+         * 전역 스타일 및 레이아웃 설정
+         * 전체 페이지 콘텐츠를 세로로 중앙 정렬합니다.
+         */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -13,81 +17,103 @@
             margin-top: 20px;
         }
 
-        /* 전장 그리드 스타일 (제일 위) */
+        /*
+         * 전장 그리드 컨테이너 스타일
+         * 17x9 크기의 전장 그리드를 정의하며, 셀 간격과 테두리를 설정합니다.
+         */
         .battlefield-container {
             display: grid;
-            grid-template-columns: repeat(17, 60px);
-            grid-template-rows: repeat(9, 60px);
-            gap: 2px;
-            border: 2px solid #666;
-            width: fit-content;
-            margin-bottom: 30px;
-            background-color: #e0ffe0;
+            grid-template-columns: repeat(17, 60px); /* 17개 열, 각 열 60px */
+            grid-template-rows: repeat(9, 60px);   /* 9개 행, 각 행 60px */
+            gap: 2px; /* 그리드 셀 사이 간격 */
+            border: 2px solid #666; /* 테두리 */
+            width: fit-content; /* 내용물에 맞춰 너비 자동 조절 */
+            margin-bottom: 30px; /* 하단 여백 */
+            background-color: #e0ffe0; /* 연한 초록색 배경 */
         }
+
+        /*
+         * 전장 그리드의 개별 셀 스타일
+         * 셀의 기본 크기와 테두리, 그리고 소환수 개수에 따른 내부 그리드 레이아웃을 정의합니다.
+         */
         .battlefield-cell {
             width: 60px;
             height: 60px;
-            border: 1px dotted #aaa;
+            border: 1px dotted #aaa; /* 점선 테두리 */
             display: grid; 
-            grid-template-columns: 1fr; 
-            grid-template-rows: 1fr;
-            gap: 0;
-            font-size: 8px; /* 이미지가 텍스트 대체하므로 중요도 낮아짐 */
-            position: relative;
-            box-sizing: border-box;
-            overflow: hidden; 
+            grid-template-columns: 1fr; /* 기본적으로 1x1 그리드 (소환수 1마리일 때) */
+            grid-template-rows: 1fr;    /* 기본적으로 1x1 그리드 (소환수 1마리일 때) */
+            gap: 0; /* 내부 그리드 셀 간격 없음 */
+            font-size: 8px; /* 전장 소환수 내 텍스트 크기 (주로 사용되지 않음) */
+            position: relative; /* 리더 마커 위치 지정을 위한 기준 */
+            box-sizing: border-box; /* 패딩과 보더가 너비에 포함되도록 계산 */
+            overflow: hidden; /* 내용이 넘치면 숨김 (소환수 크기가 셀에 맞춰지므로 주로 발생 안함) */
         }
+
+        /* 소환수가 2마리일 때 전장 셀 내부 스타일 (가로 2분할, 세로 100%) */
         .battlefield-cell.multi-summoners {
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: 1fr; /* 2개일 때 세로는 100% 사용 */
+            grid-template-columns: repeat(2, 1fr); /* 2개 열 (각 50% 너비) */
+            grid-template-rows: 1fr; /* 1개 행 (세로 100% 사용) */
         }
+        /* 소환수가 3마리 이상일 때 전장 셀 내부 스타일 (2x2 분할) */
+        .battlefield-cell.multi-summoners.three-plus {
+            grid-template-rows: repeat(2, 1fr); /* 2개 행 (각 50% 높이) */
+        }
+        /* 전장의 공유 영역 셀 배경색 */
         .battlefield-cell.shared-column {
-            background-color: #d0d0ff;
+            background-color: #d0d0ff; /* 연한 보라색 배경 */
         }
         
-        /* .battlefield-summoner 이제 이미지를 포함 */
+        /*
+         * 전장에 배치되는 소환수 이미지 컨테이너 스타일
+         * 이 요소는 전장 셀 내의 하위 그리드 아이템으로 동작합니다.
+         */
         .battlefield-summoner {
-            border-radius: 3px;
+            border-radius: 3px; /* 모서리를 둥글게 */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white; /* 텍스트 색상 (이름 없으면 의미 없음) */
+            color: white; /* 텍스트 색상 (이름 대신 이미지를 사용하므로 잘 보이지 않음) */
             font-weight: bold;
-            font-size: 8px; /* 텍스트 크기 (이름 없으면 의미 없음) */
+            font-size: 8px; 
             text-align: center;
             line-height: 1;
-            padding: 1px;
+            padding: 1px; /* 내부 여백 */
             box-sizing: border-box;
-            margin: 0; 
-            overflow: hidden; /* 이미지 넘침 방지 */
+            margin: 0; /* 내부 그리드 아이템이므로 기본 마진 없음 */
+            overflow: hidden; /* 이미지가 넘치면 숨김 */
         }
+        /* 전장 소환수 내부 이미지 스타일 */
         .battlefield-summoner img {
-            width: 100%; /* 부모(battlefield-summoner) 크기에 맞춤 */
-            height: 100%; /* 부모(battlefield-summoner) 크기에 맞춤 */
-            object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
-            border-radius: 3px; /* 소환수 테두리 반경과 일치 */
+            width: 100%; /* 부모 요소(battlefield-summoner) 크기에 꽉 채움 */
+            height: 100%;
+            object-fit: cover; /* 이미지가 잘리지 않고 영역을 채우도록 */
+            border-radius: 3px; /* 부모 요소와 동일하게 둥글게 */
         }
 
-        /* 전장 소환수: 1마리일 때 (셀 전체 사용) */
+        /* 전장 소환수: 1마리일 때 크기 (셀 전체 사용) */
         .battlefield-summoner.single-summoner {
-            width: calc(100% - 2px); 
-            height: calc(100% - 2px); 
-            margin: 1px; 
+            width: calc(100% - 2px); /* 셀 가로 너비에서 좌우 1px 마진 제외 */
+            height: calc(100% - 2px); /* 셀 세로 높이에서 상하 1px 마진 제외 */
+            margin: 1px; /* 셀 테두리 및 소환수 간 여백 */
         }
-        /* 전장 소환수: 2마리 이상일 때 (하위 2열 그리드 사용) */
+        /* 전장 소환수: 2마리 이상일 때 크기 (하위 그리드 셀에 맞춰 조정) */
         .battlefield-summoner.multi-summoner {
-            width: calc(100% - 2px); 
-            height: calc(100% - 2px); 
-            margin: 1px; 
+            width: calc(100% - 2px); /* 하위 그리드 열의 100%에서 좌우 1px 마진 제외 */
+            height: calc(100% - 2px); /* 하위 그리드 행의 100%에서 상하 1px 마진 제외 */
+            margin: 1px; /* 하위 셀 내에서 마진 */
         }
 
+        /* 나의 소환수 배경색 */
         .battlefield-summoner.my-summoner {
-            background-color: #2196F3; /* 배경색은 여전히 소유자 구분용으로 사용될 수 있음 */
+            background-color: #2196F3; /* 파란색 */
         }
+        /* 상대편 소환수 배경색 */
         .battlefield-summoner.opponent-summoner {
-            background-color: #f44336;
+            background-color: #f44336; /* 빨간색 */
         }
+        /* 전장 리더 마커 (작은 왕관 이모지) */
         .battlefield-leader-marker {
             position: absolute;
             top: 1px;
@@ -97,127 +123,164 @@
             text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.7);
         }
 
-        /* 배치 그리드 컨테이너 (중간, 좌우 분할) */
+        /*
+         * 배치 그리드 섹션 스타일 (나의 배치 그리드와 상대편 배치 그리드를 포함)
+         * 두 그리드를 가로로 나란히 배치하고 중앙 정렬합니다.
+         */
         .placement-section {
             display: flex;
             width: 100%;
-            justify-content: center;
-            gap: 50px;
-            margin-bottom: 30px;
+            justify-content: center; /* 중앙 정렬 */
+            gap: 50px; /* 그리드 컨테이너 사이 간격 */
+            margin-bottom: 30px; /* 하단 여백 */
         }
 
+        /* 개별 배치 그리드 래퍼 (제목, 카운트 UI, 실제 그리드를 포함) */
         .grid-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* 배치 수 UI를 위한 위치 기준 */
         }
 
+        /* 배치된 소환수 수를 표시하는 UI (예: "N/15") */
+        .grid-count-display {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: rgba(0, 0, 0, 0.7); /* 반투명 검정 배경 */
+            color: white; /* 흰색 텍스트 */
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 20; /* 다른 요소 위에 표시되도록 */
+        }
+
+        /* 5x5 배치 그리드 컨테이너 */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(5, 60px);
-            grid-template-rows: repeat(5, 60px);
-            gap: 5px;
-            border: 2px solid #333;
-            width: fit-content;
+            grid-template-columns: repeat(5, 60px); /* 5개 열, 각 60px */
+            grid-template-rows: repeat(5, 60px);   /* 5개 행, 각 60px */
+            gap: 5px; /* 셀 사이 간격 */
+            border: 2px solid #333; /* 테두리 */
+            width: fit-content; /* 내용물에 맞춰 너비 자동 조절 */
         }
+        /* 배치 그리드의 개별 셀 */
         .grid-cell {
             width: 60px;
             height: 60px;
-            border: 1px solid #ccc;
+            border: 1px solid #ccc; /* 옅은 회색 테두리 */
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 12px;
-            cursor: default;
-            background-color: #f0f0f0;
-            position: relative;
+            cursor: default; /* 셀 자체는 클릭 가능하지 않음 (버튼 사용) */
+            background-color: #f0f0f0; /* 연한 회색 배경 */
+            position: relative; /* 소환수 버튼 위치 지정을 위한 기준 */
         }
-        /* .summoner 기본 스타일 (풀, 배치 그리드) - 이미지 포함되도록 변경 */
-        .summoner {
-            width: 50px; 
+
+        /*
+         * 소환수 기본 스타일 (풀의 소환수, 배치 그리드의 소환수에 모두 적용)
+         * 이 스타일은 .battlefield-summoner 스타일에 의해 일부 오버라이드될 수 있습니다.
+         */
+        .summoner { 
+            width: 50px; /* 기본 소환수 크기 */
             height: 50px; 
-            background-color: #4CAF50; 
-            border-radius: 5px;
+            background-color: #4CAF50; /* 풀에 있을 때의 기본색 (초록색) */
+            border-radius: 5px; /* 모서리 둥글게 */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
+            color: white; /* 텍스트 색상 (이름 대신 이미지) */
             font-weight: bold;
             font-size: 10px;
             text-align: center;
             line-height: 1.2;
-            padding: 2px;
+            padding: 2px; /* 내부 여백 */
             box-sizing: border-box;
-            position: relative;
-            overflow: hidden; /* 이미지 넘침 방지 */
+            position: relative; /* 소환수 버튼 위치 지정을 위한 기준 */
+            overflow: hidden; /* 내부 이미지가 넘치면 숨김 */
         }
+        /* 소환수 내부 이미지 스타일 (풀 및 배치 그리드) */
         .summoner img {
-            width: 100%;
+            width: 100%; /* 부모 소환수 크기에 꽉 채움 */
             height: 100%;
-            object-fit: cover;
-            border-radius: 5px; /* 소환수 테두리 반경과 일치 */
+            object-fit: cover; /* 이미지가 잘리지 않고 영역을 채우도록 */
+            border-radius: 5px; /* 부모와 동일하게 둥글게 */
         }
 
+        /* 드래그 가능한 풀 소환수 (풀에 있을 때만 적용되는 추가 스타일) */
         .summoner-draggable {
-            cursor: grab;
-            margin: 5px;
-            background-color: #4CAF50;
+            cursor: grab; /* 드래그 가능한 커서 모양 */
+            margin: 5px; /* 풀 내 소환수 사이 간격 */
+            background-color: #4CAF50; /* 풀의 소환수는 기본 초록색으로 통일 */
         }
+        /* 배치된 나의 소환수 색상 (is-placed 데이터 속성 확인) */
         .summoner[data-is-opponent="false"].is-placed {
-            background-color: #2196F3;
+            background-color: #2196F3; /* 파란색 */
         }
+        /* 배치된 상대편 소환수 색상 (is-placed 데이터 속성 확인) */
         .summoner[data-is-opponent="true"].is-placed {
-            background-color: #f44336;
+            background-color: #f44336; /* 빨간색 */
         }
 
+        /* 리더 소환수 테두리 효과 */
         .is-leader {
-            border: 3px solid gold; 
-            box-shadow: 0 0 10px gold;
+            border: 3px solid gold; /* 금색 테두리 */
+            box-shadow: 0 0 10px gold; /* 금색 그림자 효과 */
         }
+        /* 소환수 위에 표시되는 버튼 공통 스타일 (리더 버튼, 제거 버튼) */
         .summoner-button {
             position: absolute;
             width: 18px;
             height: 18px;
-            border-radius: 50%;
+            border-radius: 50%; /* 원형 버튼 */
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 10px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 10;
+            z-index: 10; /* 소환수 위에 표시되도록 */
         }
+        /* 리더 지정 버튼 스타일 */
         .leader-button {
-            top: -5px;
+            top: -5px; /* 소환수 좌측 상단으로 이동 */
             left: -5px;
-            background-color: #ffd700;
-            color: #333;
+            background-color: #ffd700; /* 금색 배경 */
+            color: #333; /* 어두운 글자색 */
             border: 1px solid #ccaa00;
         }
         .leader-button:hover {
-            background-color: #ffeb3b;
+            background-color: #ffeb3b; /* 호버 시 밝게 */
         }
+        /* 제거 버튼 스타일 */
         .remove-button {
-            top: -5px;
+            top: -5px; /* 소환수 우측 상단으로 이동 */
             right: -5px;
-            background-color: #f44336;
-            color: white;
+            background-color: #f44336; /* 빨간색 배경 */
+            color: white; /* 흰색 글자 */
             border: 1px solid #d32f2f;
         }
         .remove-button:hover {
-            background-color: #ef5350;
+            background-color: #ef5350; /* 호버 시 밝게 */
         }
 
+        /*
+         * 공용 소환수 풀 컨테이너 스타일
+         * 모든 소환수 이미지 요소들을 담고 줄바꿈하여 표시합니다.
+         */
         .summoners-pool {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-wrap: wrap; /* 소환수들이 많으면 다음 줄로 줄바꿈 */
+            gap: 10px; /* 소환수 요소들 사이 간격 */
             margin-top: 20px;
-            border: 1px solid #eee;
-            padding: 10px;
-            width: 1000px;
-            justify-content: center;
+            border: 1px solid #eee; /* 옅은 회색 테두리 */
+            padding: 10px; /* 내부 여백 */
+            width: 1000px; /* 전장 그리드 너비에 맞춰 설정 */
+            justify-content: center; /* 중앙 정렬 */
             margin-bottom: 20px;
         }
     </style>
@@ -232,12 +295,14 @@
     <div class="placement-section">
         <div class="grid-wrapper">
             <h2>나의 배치</h2>
+            <div id="my-grid-count" class="grid-count-display">0/15</div> 
             <div id="my-grid" class="grid-container">
                 </div>
         </div>
 
         <div class="grid-wrapper">
             <h2>상대편 배치</h2>
+            <div id="opponent-grid-count" class="grid-count-display">0/15</div> 
             <div id="opponent-grid" class="grid-container">
                 </div>
         </div>
@@ -250,22 +315,31 @@
         </div>
 
     <script>
+        // DOM 요소에 대한 참조를 미리 가져와서 사용합니다.
         const opponentGrid = document.getElementById('opponent-grid');
         const myGrid = document.getElementById('my-grid');
         const commonSummonersPool = document.getElementById('common-summoners-pool');
         const battlefieldGrid = document.getElementById('battlefield-grid');
+        const myGridCountDisplay = document.getElementById('my-grid-count');
+        const opponentGridCountDisplay = document.getElementById('opponent-grid-count');
 
-        const grid5x5Size = 5;
-        const maxSummoners = 15;
+        // 게임의 전반적인 설정을 위한 상수들
+        const grid5x5Size = 5; // 배치 그리드의 크기 (5x5 셀)
+        const maxSummoners = 15; // 각 진영이 배치할 수 있는 최대 소환수 수
 
-        const battlefieldCols = 17;
-        const battlefieldRows = 9;   
+        // 전장 그리드의 크기 설정
+        const battlefieldCols = 17; // 전장 그리드의 열 개수
+        const battlefieldRows = 9;   // 전장 그리드의 행 개수
         
+        // 전장 그리드의 세로 중앙 행을 계산합니다 (9행의 경우 인덱스 4).
         const battlefieldVerticalCenterRow = Math.floor(battlefieldRows / 2); 
 
+        // 나의 리더가 전장에서 배치될 열의 인덱스 (5번째 열, 즉 인덱스 4)
         const myLeaderBattlefieldCol = 4; 
+        // 상대편 리더가 전장에서 배치될 열의 인덱스 (13번째 열, 즉 인덱스 12)
         const opponentLeaderBattlefieldCol = 12;
 
+        // 게임에 사용될 소환수들의 이름 목록을 가나다순으로 정렬합니다.
         const summonerNames = [
             '사브리나', '테사리온', '아르타미엘', '투전승불', '라이마', '멜리사', '카산드라', 
             '샬롯', '애너벨', '잔느', '시화', '그로겐', '리나', '델포이', '오필리아', 
@@ -273,88 +347,116 @@
             '알리시아', '테트라', '채선', '갤리온', '미후왕'
         ].sort();
 
-        // 이미지 파일이 있는 폴더 경로 (HTML 파일과 같은 경로에 'summoner_images' 폴더가 있다고 가정)
-        const imagePath = 'summoner_images/'; 
-        // 이미지 파일 확장자 (모든 이미지가 .png라면 'png'로, 혼용된다면 각 소환수별로 관리 필요)
-        const imageExtension = '.png'; 
-
+        // 현재 나의 진영과 상대편 진영에 배치된 소환수 수를 추적하는 변수
         let myPlacedSummoners = 0;
         let opponentPlacedSummoners = 0;
 
+        // 현재 각 진영의 리더 소환수 엘리먼트 (DOM 참조)를 저장하는 변수
         let myLeaderSummoner = null;
         let opponentLeaderSummoner = null;
 
+        // 소환수 이미지 파일의 기본 경로와 확장자를 정의합니다.
+        const imagePath = 'summoner_images/'; // 예: 'summoner_images/' 폴더에 이미지가 있다고 가정
+        const imageExtension = '.png'; // 모든 이미지가 PNG 형식이라고 가정
+
+        /**
+         * 5x5 크기의 배치 그리드 셀들을 동적으로 생성하고 초기화합니다.
+         * 각 셀에는 드래그 오버 및 드롭 이벤트를 처리할 리스너가 추가됩니다.
+         * @param {HTMLElement} gridElement - 셀들이 추가될 그리드 컨테이너 DOM 요소 (예: myGrid, opponentGrid)
+         * @param {string} gridType - 이 그리드가 'my' (나의 진영) 또는 'opponent' (상대편 진영) 중 무엇인지 구분합니다.
+         */
         function createGrid(gridElement, gridType) {
             for (let i = 0; i < grid5x5Size * grid5x5Size; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('grid-cell');
-                cell.dataset.index = i;
+                cell.dataset.index = i; // 셀의 순서 인덱스를 데이터 속성으로 저장
                 gridElement.appendChild(cell);
 
-                cell.addEventListener('dragover', dragOver);
-                cell.addEventListener('drop', (e) => drop(e, gridType));
+                cell.addEventListener('dragover', dragOver); // 드래그 오버 시 허용 처리
+                cell.addEventListener('drop', (e) => drop(e, gridType)); // 드롭 시 처리
             }
         }
 
+        /**
+         * 17x9 크기의 전장 그리드 셀들을 동적으로 생성하고 초기화합니다.
+         * 전장 셀의 중앙 공유 영역에 특별한 배경 스타일을 적용합니다.
+         */
         function createBattlefieldGrid() {
             for (let i = 0; i < battlefieldCols * battlefieldRows; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('battlefield-cell');
-                const colIndex = i % battlefieldCols;
+                const colIndex = i % battlefieldCols; // 현재 셀의 열 인덱스
+                // 나의 리더 열과 상대 리더 열 사이를 공유 영역으로 표시
                 if (colIndex > myLeaderBattlefieldCol && colIndex < opponentLeaderBattlefieldCol) { 
-                     cell.classList.add('shared-column');
+                     cell.classList.add('shared-column'); // 공유 영역 스타일 클래스 추가
                 }
                 battlefieldGrid.appendChild(cell);
             }
         }
 
+        /**
+         * 공용 소환수 풀에 모든 소환수 이미지 요소들을 동적으로 생성합니다.
+         * 각 소환수는 드래그 가능하며, 풀의 소환수에게는 리더/제거 버튼이 없습니다.
+         */
         function createCommonSummonerPool() {
             for (let i = 0; i < summonerNames.length; i++) { 
                 const summoner = document.createElement('div');
-                summoner.classList.add('summoner', 'summoner-draggable');
+                summoner.classList.add('summoner', 'summoner-draggable'); // 기본 스타일 및 드래그 가능 스타일
                 
-                // 이미지 추가
                 const img = document.createElement('img');
-                img.src = `${imagePath}${summonerNames[i]}${imageExtension}`;
-                img.alt = summonerNames[i];
+                img.src = `${imagePath}${summonerNames[i]}${imageExtension}`; // 이미지 파일 경로 설정
+                img.alt = summonerNames[i]; // 이미지 대체 텍스트 (접근성)
                 summoner.appendChild(img);
 
-                summoner.setAttribute('draggable', true); 
-                summoner.id = `summoner-pool-${summonerNames[i]}`;
-                summoner.dataset.summonerName = summonerNames[i];
-                summoner.dataset.isLeader = 'false';
-                commonSummonersPool.appendChild(summoner);
+                summoner.setAttribute('draggable', true); // HTML draggable 속성 활성화
+                summoner.id = `summoner-pool-${summonerNames[i]}`; // 풀 내에서 고유한 ID 부여
+                summoner.dataset.summonerName = summonerNames[i]; // 소환수 이름 데이터 속성 저장
+                summoner.dataset.isLeader = 'false'; // 초기 리더 상태 (풀에선 리더 아님)
+                commonSummonersPool.appendChild(summoner); // 풀에 소환수 요소 추가
 
-                summoner.addEventListener('dragstart', dragStart);
+                summoner.addEventListener('dragstart', dragStart); // 드래그 시작 이벤트 리스너 연결
             }
         }
 
+        /**
+         * 배치 그리드에 있는 소환수 요소에 'L'(리더 지정) 및 'X'(제거) 버튼을 추가합니다.
+         * 이 버튼들은 소환수가 풀에서 그리드로 배치될 때 생성됩니다.
+         * @param {HTMLElement} summonerElement - 버튼을 추가할 소환수 DOM 요소
+         */
         function addSummonerButtons(summonerElement) {
+            // 리더 버튼 생성 또는 업데이트
             let leaderBtn = summonerElement.querySelector('.leader-button');
             if (!leaderBtn) {
                 leaderBtn = document.createElement('div');
                 leaderBtn.classList.add('summoner-button', 'leader-button');
-                leaderBtn.textContent = (summonerElement.dataset.isLeader === 'true') ? '👑' : 'L';
                 leaderBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); 
-                    toggleLeader(summonerElement);
+                    e.stopPropagation(); // 부모 요소로 클릭 이벤트 전파 방지
+                    toggleLeader(summonerElement); // 리더 토글 함수 호출
                 });
                 summonerElement.appendChild(leaderBtn);
             }
+            // 리더 상태에 따라 버튼 텍스트를 '👑' 또는 'L'로 변경
+            leaderBtn.textContent = (summonerElement.dataset.isLeader === 'true') ? '👑' : 'L'; 
 
+            // 제거 버튼 생성 또는 업데이트
             let removeBtn = summonerElement.querySelector('.remove-button');
             if (!removeBtn) {
                 removeBtn = document.createElement('div');
                 removeBtn.classList.add('summoner-button', 'remove-button');
                 removeBtn.textContent = 'X';
                 removeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); 
-                    removeSummoner(summonerElement);
+                    e.stopPropagation(); // 부모 요소로 클릭 이벤트 전파 방지
+                    removeSummoner(summonerElement); // 소환수 제거 함수 호출
                 });
                 summonerElement.appendChild(removeBtn);
             }
         }
 
+        /**
+         * 소환수 요소에서 'L' 및 'X' 버튼을 제거합니다.
+         * 소환수가 그리드에서 제거되어 풀로 돌아갈 때 사용됩니다.
+         * @param {HTMLElement} summonerElement - 버튼을 제거할 소환수 DOM 요소
+         */
         function removeSummonerButtons(summonerElement) {
             const leaderBtn = summonerElement.querySelector('.leader-button');
             if (leaderBtn) {
@@ -366,63 +468,93 @@
             }
         }
 
+        // 현재 드래그 중인 소환수 엘리먼트 (원본 풀 소환수 또는 배치된 클론 소환수)
         let draggedSummoner = null; 
+        // 드래그 시작 시, 배치 그리드에 있던 소환수(클론)의 원래 셀 (HTMLElement)을 추적하기 위한 변수
+        let originalDragSourceCell = null; 
 
+        /**
+         * 드래그 작업이 시작될 때 호출됩니다.
+         * 드래그 대상 소환수의 유형을 식별하고, 배치된 소환수일 경우 임시로 DOM에서 제거합니다.
+         * @param {Event} e - dragstart 이벤트 객체
+         */
         function dragStart(e) {
             draggedSummoner = e.target;
             
-            // 이미지 자체를 드래그할 경우 부모 소환수 div를 draggedSummoner로 설정
+            // 만약 드래그 대상이 소환수 이미지 자체일 경우, 부모 소환수 div를 실제 드래그 대상으로 설정
             if (draggedSummoner.tagName === 'IMG') {
                 draggedSummoner = draggedSummoner.closest('.summoner');
-                if (!draggedSummoner) return; // 유효한 소환수 div가 아니면 취소
+                if (!draggedSummoner) return; // 유효한 소환수 div를 찾지 못하면 함수 종료
             }
 
+            // 드래그하는 소환수가 풀에 있는 원본인지, 그리드에 배치된 클론인지 구분
             if (draggedSummoner.parentElement.id === 'common-summoners-pool') {
-                draggedSummoner.dataset.isPoolOriginal = 'true';
+                draggedSummoner.dataset.isPoolOriginal = 'true'; // 풀에서 온 원본 소환수
+                originalDragSourceCell = null; // 풀에서 왔으므로 원래 배치 셀 없음
             } else { 
-                draggedSummoner.dataset.isPoolOriginal = 'false';
+                draggedSummoner.dataset.isPoolOriginal = 'false'; // 그리드에서 온 클론 소환수
+                // 배치된 소환수를 드래그할 경우, 원래 있던 셀을 저장하여 나중에 복구 또는 교환에 사용
+                originalDragSourceCell = draggedSummoner.parentElement;
             }
 
+            // 0.5초 후 드래그 중인 소환수를 반투명하게 만들고, 원래 셀에서 임시 제거
             setTimeout(() => {
                 draggedSummoner.style.opacity = '0.5';
                 
-                if (draggedSummoner.parentElement && draggedSummoner.parentElement.classList.contains('grid-cell')) {
-                    draggedSummoner.parentElement.removeChild(draggedSummoner);
+                // 그리드에서 온 소환수일 경우에만 원래 셀에서 제거하여 드롭 공간을 비워줌
+                if (originalDragSourceCell) { 
+                    originalDragSourceCell.removeChild(draggedSummoner);
                 }
             }, 0);
         }
 
+        /**
+         * 드래그 중인 요소가 드롭 가능한 대상 위로 이동할 때 호출됩니다.
+         * 브라우저의 기본 드롭 동작을 방지하여 드롭을 허용합니다.
+         * @param {Event} e - dragover 이벤트 객체
+         */
         function dragOver(e) {
-            e.preventDefault();
+            e.preventDefault(); 
         }
 
+        /**
+         * 드래그 중인 요소가 드롭 대상 위에 놓일 때 호출됩니다.
+         * 소환수 배치, 이동, 교환, 제거 등의 복잡한 로직을 처리합니다.
+         * @param {Event} e - drop 이벤트 객체
+         * @param {string} targetGridType - 드롭 대상 그리드의 유형 ('my' 또는 'opponent')
+         */
         function drop(e, targetGridType) {
-            e.preventDefault();
-            if (!draggedSummoner) return;
+            e.preventDefault(); 
+            if (!draggedSummoner) return; // 유효한 드래그 대상이 없으면 함수 종료
 
-            const targetCell = e.target.closest('.grid-cell');
-            const draggedIsPoolOriginal = draggedSummoner.dataset.isPoolOriginal === 'true';
+            const targetCell = e.target.closest('.grid-cell'); // 드롭된 곳이 그리드 셀인지 확인
+            const draggedIsPoolOriginal = draggedSummoner.dataset.isPoolOriginal === 'true'; // 드래그 대상이 풀의 원본인지 여부
 
+            // 1. 드롭 대상이 그리드 셀이 아닌 곳인 경우 (소환수 제거 또는 원본 복구)
             if (!targetCell) { 
-                if (!draggedIsPoolOriginal) { 
-                    removeSummonerFromGrid(draggedSummoner); 
-                    draggedSummoner.remove(); 
+                if (!draggedIsPoolOriginal) { // 배치된 클론 소환수를 그리드 밖으로 드롭한 경우
+                    removeSummonerFromGrid(draggedSummoner); // 배치 수 감소 및 리더 해제 (DOM 제거는 이 함수에서 하지 않음)
+                    draggedSummoner.remove(); // 클론이므로 DOM에서 완전히 제거
+                } else { // 풀의 원본 소환수를 그리드 밖으로 드롭한 경우 (풀로 돌아가야 함)
+                    draggedSummoner.style.opacity = '1'; // 투명도 복구
+                    draggedSummoner.removeAttribute('data-is-pool-original'); // 임시 데이터 제거
                 }
-                draggedSummoner.style.opacity = '1';
-                draggedSummoner.removeAttribute('data-is-pool-original'); 
+                // 드롭 결과에 따른 UI 및 전장 업데이트
                 draggedSummoner = null;
+                originalDragSourceCell = null; // 원래 셀 정보 초기화
                 updateLeaderMarkers();
-                updateBattlefield();
-                return;
+                updatePlacementCountDisplays(); // N/15 카운트 업데이트
+                updateBattlefield(); // 전장 그리드 업데이트
+                return; // 함수 종료
             }
             
-            const willBeOpponent = (targetGridType === 'opponent');
+            const willBeOpponent = (targetGridType === 'opponent'); // 드롭될 그리드의 진영
+            let summonerToPlace = draggedSummoner; // 최종적으로 타겟 셀에 배치될 소환수 엘리먼트
 
-            let summonerToPlace = null; 
-
+            // 2. 풀에서 그리드로 새로운 소환수를 배치하는 경우 (드래그 대상이 풀의 원본)
             if (draggedIsPoolOriginal) { 
                 const currentPlacedCount = willBeOpponent ? opponentPlacedSummoners : myPlacedSummoners;
-                if (currentPlacedCount >= maxSummoners) {
+                if (currentPlacedCount >= maxSummoners) { // 해당 진영의 최대 배치 수 초과 확인
                     alert(`더 이상 소환수를 배치할 수 없습니다. (최대 ${maxSummoners}마리)`);
                     draggedSummoner.style.opacity = '1';
                     draggedSummoner.removeAttribute('data-is-pool-original');
@@ -430,102 +562,164 @@
                     return;
                 }
 
-                summonerToPlace = draggedSummoner.cloneNode(true);
-                summonerToPlace.classList.remove('summoner-draggable');
-                summonerToPlace.classList.add('is-placed');
-                summonerToPlace.removeAttribute('id'); 
-                summonerToPlace.setAttribute('draggable', true); 
-                summonerToPlace.addEventListener('dragstart', dragStart);
-
-                summonerToPlace.dataset.isLeader = 'false';
-                
-                summonerToPlace.dataset.isOpponent = willBeOpponent.toString();
-                
-                draggedSummoner.style.opacity = '1';
-                draggedSummoner.removeAttribute('data-is-pool-original');
-
-            } else { // 이미 배치된 클론 소환수를 드래그한 경우
-                summonerToPlace = draggedSummoner;
-                
-                const originalGridIsOpponent = summonerToPlace.dataset.isOpponent === 'true'; 
-                if (originalGridIsOpponent !== willBeOpponent) { // 다른 진영 그리드로 이동
-                    if (originalGridIsOpponent) { // 상대 -> 나의 그리드
-                        opponentPlacedSummoners--;
-                        myPlacedSummoners++;
-                    } else { // 나의 -> 상대 그리드
-                        myPlacedSummoners--;
-                        opponentPlacedSummoners++;
-                    }
-                    if (opponentLeaderSummoner === summonerToPlace) opponentLeaderSummoner = null;
-                    if (myLeaderSummoner === summonerToPlace) myLeaderSummoner = null;
-                    
-                    summonerToPlace.classList.remove('is-leader'); 
-                    summonerToPlace.dataset.isLeader = 'false';
+                // 동일 그리드 내 같은 소환수 중복 배치 금지
+                const targetGrid = targetGridType === 'my' ? myGrid : opponentGrid;
+                const existingSummonerNamesInGrid = Array.from(targetGrid.querySelectorAll('.summoner.is-placed')).map(s => s.dataset.summonerName);
+                if (existingSummonerNamesInGrid.includes(draggedSummoner.dataset.summonerName)) {
+                    alert(`"${draggedSummoner.dataset.summonerName}" 소환수는 이미 이 그리드에 배치되어 있습니다.`);
+                    draggedSummoner.style.opacity = '1';
+                    draggedSummoner.removeAttribute('data-is-pool-original');
+                    draggedSummoner = null;
+                    return;
                 }
+                
+                // 새로운 클론 생성 및 속성 설정
+                summonerToPlace = draggedSummoner.cloneNode(true); // 원본 소환수로부터 클론 생성
+                summonerToPlace.classList.remove('summoner-draggable');
+                summonerToPlace.classList.add('is-placed'); // 배치된 소환수임을 표시
+                summonerToPlace.removeAttribute('id'); // 클론이므로 ID 제거 (HTML ID는 고유해야 함)
+                summonerToPlace.setAttribute('draggable', true); // 클론도 드래그 가능하도록 설정
+                summonerToPlace.addEventListener('dragstart', dragStart); // 클론에 dragstart 이벤트 리스너 재연결
+                summonerToPlace.dataset.isLeader = 'false'; // 새로 배치되는 소환수는 초기 리더 아님
+                summonerToPlace.dataset.isOpponent = willBeOpponent.toString(); // 진영 설정
+                
+                // 새로운 배치이므로 해당 진영의 소환수 카운트 증가
+                if (willBeOpponent) {
+                    opponentPlacedSummoners++;
+                } else {
+                    myPlacedSummoners++;
+                }
+
+                draggedSummoner.style.opacity = '1'; // 원본 소환수 투명도 복구
+                draggedSummoner.removeAttribute('data-is-pool-original'); // 임시 데이터 제거
+
+            } else { // 3. 그리드에서 그리드로 이동 또는 교환 (드래그 대상이 이미 배치된 클론 소환수)
+                const draggedSummonerIsOpponent = summonerToPlace.dataset.isOpponent === 'true'; // 드래그한 소환수의 현재 진영
+                const originalGridWasOpponent = (originalDragSourceCell && originalDragSourceCell.parentElement.id === 'opponent-grid'); // 드래그 전 소환수의 진영
+                
+                // 대상 셀에 이미 소환수가 있는 경우 (교환)
+                if (targetCell.hasChildNodes()) { 
+                    const existingSummoner = targetCell.firstChild; // 대상 셀의 기존 소환수
+                    const existingIsOpponent = existingSummoner.dataset.isOpponent === 'true'; // 기존 소환수의 진영
+
+                    if (draggedSummonerIsOpponent === existingIsOpponent) { // 같은 진영 소환수끼리만 교환 허용
+                        // 기존 소환수(existingSummoner)를 드래그한 소환수(summonerToPlace)의 원래 위치로 옮김
+                        if (originalDragSourceCell) { // dragStart 시 원래 셀이 저장되어 있다면
+                             originalDragSourceCell.appendChild(existingSummoner); // 기존 소환수를 원래 자리로 이동
+                             existingSummoner.style.opacity = '1'; // 투명도 복구
+                             addSummonerButtons(existingSummoner); // 버튼 다시 추가
+                        } else { // 원래 셀을 찾을 수 없는 비상 상황 (발생해서는 안되지만, 안전장치)
+                            // 이 경우는 교환이 아니므로, 기존 소환수는 제거하고 카운트를 줄여야 함
+                            removeSummonerFromGrid(existingSummoner); // 카운트 감소, 리더 해제 (existingSummoner는 사라짐)
+                            existingSummoner.remove(); // DOM에서 제거
+                        }
+                        // 교환이므로 배치된 소환수 총 개수에는 변경 없음.
+                    } else { // 다른 진영 소환수와는 교환 불가
+                        alert('다른 진영의 소환수와는 교환할 수 없습니다.');
+                        // 드래그한 소환수(summonerToPlace)를 원래 위치(originalDragSourceCell)로 복구
+                        if (originalDragSourceCell) { // dragStart 시 원래 셀이 저장되어 있다면
+                             originalDragSourceCell.appendChild(summonerToPlace);
+                        }
+                        summonerToPlace.style.opacity = '1'; // 투명도 복구
+                        addSummonerButtons(summonerToPlace); // 버튼 다시 추가
+                        // 드롭 실패 시 변수 초기화 및 UI 업데이트 후 함수 종료
+                        draggedSummoner = null;
+                        originalDragSourceCell = null;
+                        updateLeaderMarkers();
+                        updatePlacementCountDisplays();
+                        updateBattlefield();
+                        return; // 교환 실패 시 함수 종료
+                    }
+                } else { // 대상 셀이 빈 경우 (이동)
+                    // 진영 변경이 있는 경우에만 소환수 카운트 및 리더 정보 업데이트 (같은 그리드 내 이동은 카운트 불변)
+                    if (originalGridWasOpponent !== willBeOpponent) { 
+                        if (originalGridWasOpponent) { // 상대 그리드에서 나의 그리드로 이동
+                            opponentPlacedSummoners--;
+                            myPlacedSummoners++;
+                        } else { // 나의 그리드에서 상대 그리드로 이동
+                            myPlacedSummoners--;
+                            opponentPlacedSummoners++;
+                        }
+                        // 리더도 해당 진영에서 해제 (이동한 소환수가 리더였다면)
+                        if (opponentLeaderSummoner === summonerToPlace) opponentLeaderSummoner = null;
+                        if (myLeaderSummoner === summonerToPlace) myLeaderSummoner = null;
+                        
+                        summonerToPlace.classList.remove('is-leader'); // 리더 상태 클래스 제거
+                        summonerToPlace.dataset.isLeader = 'false'; // 리더 데이터 속성 업데이트
+                    }
+                }
+                // 드래그한 소환수의 소유자 업데이트 (진영 변경이 있었다면)
                 summonerToPlace.dataset.isOpponent = willBeOpponent.toString(); 
             }
 
-            if (targetCell && !targetCell.hasChildNodes()) { // 셀이 비어있을 때
-                targetCell.appendChild(summonerToPlace);
-                if (draggedIsPoolOriginal) { 
-                    if (willBeOpponent) {
-                        opponentPlacedSummoners++;
-                    } else {
-                        myPlacedSummoners++;
-                    }
-                }
-            } else if (targetCell && targetCell.hasChildNodes()) { // 셀에 이미 소환수가 있을 때 (교체)
-                const existingSummoner = targetCell.firstChild;
-                
-                removeSummonerFromGrid(existingSummoner); 
-                existingSummoner.remove(); 
+            // 최종적으로 모든 드롭 시나리오의 성공적인 끝에서 소환수를 타겟 셀에 추가
+            targetCell.appendChild(summonerToPlace);
+            summonerToPlace.style.opacity = '1'; // 투명도 복구
+            addSummonerButtons(summonerToPlace); // 버튼 다시 추가
 
-                targetCell.appendChild(summonerToPlace);
-            } 
-            summonerToPlace.style.opacity = '1';
-            addSummonerButtons(summonerToPlace);
-            
+            // 모든 드롭 시나리오 처리 완료 후 전역 변수 초기화 및 UI 업데이트
             draggedSummoner = null;
+            originalDragSourceCell = null; 
             updateLeaderMarkers();
-            updateBattlefield();
+            updatePlacementCountDisplays(); // N/15 카운트 업데이트
+            updateBattlefield(); // 전장 그리드 업데이트
         }
 
+        /**
+         * 배치된 소환수를 그리드에서 제거하고 풀로 되돌립니다.
+         * 주로 'X' 버튼 클릭 시 호출됩니다.
+         * @param {HTMLElement} summonerElement - 제거할 소환수 DOM 요소 (클론)
+         */
         function removeSummoner(summonerElement) {
             const parentCell = summonerElement.parentElement;
-            if (parentCell && parentCell.classList.contains('grid-cell')) {
-                removeSummonerFromGrid(summonerElement);
-                summonerElement.remove(); 
+            if (parentCell && parentCell.classList.contains('grid-cell')) { // 소환수가 그리드 셀에 실제로 있다면
+                removeSummonerFromGrid(summonerElement); // 배치 수 감소 및 리더 정보 업데이트
+                summonerElement.remove(); // 클론이므로 DOM에서 완전히 제거
                 
+                // 제거 후 UI 업데이트
                 updateLeaderMarkers();
-                updateBattlefield();
+                updatePlacementCountDisplays(); // N/15 카운트 업데이트
+                updateBattlefield(); // 전장 그리드 업데이트
             }
         }
 
+        /**
+         * 그리드에서 소환수(클론)가 완전히 제거될 때 호출되어 배치 수 및 리더 정보를 업데이트합니다.
+         * (DOM에서 실제 요소를 제거하는 역할은 이 함수를 호출하는 곳에서 수행합니다.)
+         * @param {HTMLElement} summonerElement - 제거될 소환수 DOM 요소
+         */
         function removeSummonerFromGrid(summonerElement) {
             const isOpponent = summonerElement.dataset.isOpponent === 'true';
-            if (isOpponent) {
-                opponentPlacedSummoners--;
-                if (opponentLeaderSummoner === summonerElement) {
-                    opponentLeaderSummoner = null;
+            if (isOpponent) { // 상대편 소환수라면
+                opponentPlacedSummoners--; // 상대편 배치 수 감소
+                if (opponentLeaderSummoner === summonerElement) { // 제거되는 소환수가 리더였다면
+                    opponentLeaderSummoner = null; // 리더 해제
                 }
-            } else {
-                myPlacedSummoners--;
-                if (myLeaderSummoner === summonerElement) {
-                    myLeaderSummoner = null;
+            } else { // 나의 소환수라면
+                myPlacedSummoners--; // 나의 배치 수 감소
+                if (myLeaderSummoner === summonerElement) { // 제거되는 소환수가 리더였다면
+                    myLeaderSummoner = null; // 리더 해제
                 }
             }
-            summonerElement.dataset.isLeader = 'false';
+            summonerElement.dataset.isLeader = 'false'; // 데이터 속성도 리더 해제로 업데이트
         }
 
+        /**
+         * 소환수를 해당 진영의 리더로 지정하거나, 이미 리더인 경우 해제합니다.
+         * 'L' 버튼 클릭 시 호출됩니다.
+         * @param {HTMLElement} summonerElement - 리더 상태를 변경할 소환수 DOM 요소
+         */
         function toggleLeader(summonerElement) {
             const isOpponent = summonerElement.dataset.isOpponent === 'true';
             let currentLeader = isOpponent ? opponentLeaderSummoner : myLeaderSummoner;
 
+            // 소환수가 그리드에 배치되어 있지 않으면 리더 지정 불가
             if (!summonerElement.parentElement.classList.contains('grid-cell')) {
                 return; 
             }
 
             if (summonerElement.dataset.isLeader === 'true') {
+                // 이미 리더인 경우: 리더 상태를 해제합니다.
                 summonerElement.dataset.isLeader = 'false';
                 if (isOpponent) {
                     opponentLeaderSummoner = null;
@@ -533,47 +727,69 @@
                     myLeaderSummoner = null;
                 }
             } else {
+                // 리더가 아닌 경우: 해당 소환수를 리더로 지정합니다.
+                // 이전에 리더였던 소환수가 있다면 그 소환수의 리더 상태를 해제합니다.
                 if (currentLeader) {
-                    currentLeader.dataset.isLeader = 'false';
+                    currentLeader.dataset.isLeader = 'false'; // 기존 리더 해제
                 }
-                summonerElement.dataset.isLeader = 'true';
+                summonerElement.dataset.isLeader = 'true'; // 새 소환수를 리더로 설정
                 if (isOpponent) {
                     opponentLeaderSummoner = summonerElement;
                 } else {
                     myLeaderSummoner = summonerElement;
                 }
             }
-            updateLeaderMarkers();
-            updateBattlefield();
+            // 리더 상태 변경 후 UI 업데이트
+            updateLeaderMarkers(); // 리더 마커(왕관/L) 업데이트
+            updateBattlefield(); // 전장 그리드 업데이트 (리더 위치 반영)
         }
 
+        /**
+         * 배치 그리드에 있는 소환수들의 리더 표시 (테두리, 버튼 텍스트)를 업데이트합니다.
+         */
         function updateLeaderMarkers() {
+            // 모든 배치된 소환수에서 리더 테두리 제거 및 버튼 텍스트 'L'로 초기화
             document.querySelectorAll('.grid-cell .summoner').forEach(s => {
-                s.classList.remove('is-leader');
+                s.classList.remove('is-leader'); // 리더 테두리 클래스 제거
 
                 const leaderBtn = s.querySelector('.leader-button');
                 if (leaderBtn) {
-                    leaderBtn.textContent = 'L';
+                    leaderBtn.textContent = 'L'; // 기본 'L' 텍스트로 복구
                 }
             });
 
+            // 현재 리더로 지정된 소환수에게 리더 테두리 추가 및 버튼 텍스트 '👑'으로 변경
             [myLeaderSummoner, opponentLeaderSummoner].forEach(leader => {
+                // 리더가 존재하고 아직 배치 그리드에 있다면 (유효성 검사)
                 if (leader && leader.parentElement && leader.parentElement.classList.contains('grid-cell')) {
-                    leader.classList.add('is-leader');
+                    leader.classList.add('is-leader'); // 리더 테두리 클래스 추가
                     const leaderBtn = leader.querySelector('.leader-button');
                     if (leaderBtn) {
-                        leaderBtn.textContent = '👑';
+                        leaderBtn.textContent = '👑'; // 왕관 이모지로 변경
                     }
                 }
             });
         }
 
+        /**
+         * 배치 수 UI (N/15)를 현재 배치된 소환수 수에 맞춰 업데이트합니다.
+         */
+        function updatePlacementCountDisplays() {
+            myGridCountDisplay.textContent = `${myPlacedSummoners}/${maxSummoners}`;
+            opponentGridCountDisplay.textContent = `${opponentPlacedSummoners}/${maxSummoners}`;
+        }
+
+        /**
+         * 전장 그리드를 새로고침하여 현재 배치된 소환수들을 정확한 위치에 표시합니다.
+         * 소환수 개수에 따라 전장 셀의 내부 그리드 템플릿과 소환수 크기가 동적으로 변경됩니다.
+         */
         function updateBattlefield() {
-            battlefieldGrid.innerHTML = '';
-            createBattlefieldGrid();
+            battlefieldGrid.innerHTML = ''; // 기존 전장 그리드 내용을 모두 지움
+            createBattlefieldGrid(); // 비어있는 전장 그리드 셀들을 다시 생성
 
             const battlefieldCells = battlefieldGrid.querySelectorAll('.battlefield-cell');
             
+            // 전장 중앙의 공유 영역 셀에 배경색을 다시 적용
             for (let r = 0; r < battlefieldRows; r++) {
                 for (let c = myLeaderBattlefieldCol + 1; c < opponentLeaderBattlefieldCol; c++) { 
                      const battlefieldIndex = r * battlefieldCols + c;
@@ -583,31 +799,38 @@
                 }
             }
 
+            // 나의 배치 그리드와 상대편 배치 그리드에서 소환수 데이터를 수집합니다.
             const myPlacedSummonersData = collectSummonersData(myGrid);
             const opponentPlacedSummonersData = collectSummonersData(opponentGrid);
 
+            // 각 진영의 리더 소환수의 원래 배치 그리드 내 위치를 찾습니다.
             let myLeaderOriginalPos = myPlacedSummonersData.find(s => s.isLeader);
             let opponentLeaderOriginalPos = opponentPlacedSummonersData.find(s => s.isLeader);
 
+            // 전장 셀별로 배치될 소환수들을 매핑하기 위한 Map (예: "행,열" 문자열 키에 소환수 엘리먼트 배열 저장)
             const battlefieldPlacementMap = new Map();
 
+            // 나의 소환수들을 전장 좌표에 매핑하여 Map에 추가
+            // 리더가 존재하고 배치되어 있다면, 먼저 리더를 전장 중앙 열에 매핑합니다.
             if (myLeaderSummoner && myLeaderSummoner.parentElement && myLeaderSummoner.parentElement.classList.contains('grid-cell')) {
                 const key = `${battlefieldVerticalCenterRow},${myLeaderBattlefieldCol}`;
                 if (!battlefieldPlacementMap.has(key)) battlefieldPlacementMap.set(key, []);
                 battlefieldPlacementMap.get(key).push(myLeaderSummoner);
             }
+            // 리더가 아닌 나의 다른 소환수들을 리더를 기준으로 상대적으로 전장 좌표에 매핑합니다.
             myPlacedSummonersData.forEach(data => {
-                if (!data.isLeader) { 
+                if (!data.isLeader) { // 리더는 위에서 이미 처리했으므로 건너뜁니다.
                     let bfRow, bfCol;
-                    if (myLeaderOriginalPos) {
+                    if (myLeaderOriginalPos) { // 리더가 있을 경우: 리더의 전장 위치를 기준으로 상대적 위치를 계산합니다.
                         const rowDiff = data.originalRow - myLeaderOriginalPos.originalRow;
                         const colDiff = data.originalCol - myLeaderOriginalPos.originalCol;
                         bfRow = battlefieldVerticalCenterRow + rowDiff;
                         bfCol = myLeaderBattlefieldCol + colDiff;
-                    } else {
+                    } else { // 리더가 없을 경우: 나의 그리드 시작점 (전장 2행, 0열) 기준으로 매핑합니다.
                         bfRow = battlefieldVerticalCenterRow - 2 + data.originalRow;
                         bfCol = 0 + data.originalCol; 
                     }
+                    // 계산된 전장 좌표가 유효한 범위 내에 있는지 확인 후 Map에 추가합니다.
                     if (bfRow >= 0 && bfRow < battlefieldRows && bfCol >= 0 && bfCol < battlefieldCols) {
                         const key = `${bfRow},${bfCol}`;
                         if (!battlefieldPlacementMap.has(key)) battlefieldPlacementMap.set(key, []);
@@ -616,18 +839,22 @@
                 }
             });
 
+            // 상대편 소환수들을 전장 좌표에 매핑하여 Map에 추가 (180도 회전 적용)
+            // 리더가 존재하고 배치되어 있다면, 먼저 리더를 전장 중앙 열에 매핑합니다.
             if (opponentLeaderSummoner && opponentLeaderSummoner.parentElement && opponentLeaderSummoner.parentElement.classList.contains('grid-cell')) {
                 const key = `${battlefieldVerticalCenterRow},${opponentLeaderBattlefieldCol}`;
                 if (!battlefieldPlacementMap.has(key)) battlefieldPlacementMap.set(key, []);
                 battlefieldPlacementMap.get(key).push(opponentLeaderSummoner);
             }
+            // 리더가 아닌 상대편의 다른 소환수들을 리더를 기준으로 상대적으로 매핑합니다 (180도 회전 적용).
             opponentPlacedSummonersData.forEach(data => {
                 if (!data.isLeader) { 
                     let bfRow, bfCol;
+                    // 배치 그리드 내에서 180도 회전된 상대적 위치를 계산합니다.
                     const rotatedRow = (grid5x5Size - 1) - data.originalRow;
                     const rotatedCol = (grid5x5Size - 1) - data.originalCol;
 
-                    if (opponentLeaderOriginalPos) {
+                    if (opponentLeaderOriginalPos) { // 리더가 있을 경우: 리더의 회전된 위치를 기준으로 상대적 위치를 계산합니다.
                         const leaderRotatedRow = (grid5x5Size - 1) - opponentLeaderOriginalPos.originalRow;
                         const leaderRotatedCol = (grid5x5Size - 1) - opponentLeaderOriginalPos.originalCol;
 
@@ -637,10 +864,11 @@
                         bfRow = battlefieldVerticalCenterRow + rowDiff;
                         bfCol = opponentLeaderBattlefieldCol + colDiff;
 
-                    } else {
+                    } else { // 리더가 없을 경우: 상대 그리드 시작점 (전장 2행, 8열) 기준으로 매핑 (회전된 좌표 사용)
                         bfRow = battlefieldVerticalCenterRow - 2 + rotatedRow;
                         bfCol = 8 + rotatedCol; 
                     }
+                    // 계산된 전장 좌표가 유효한 범위 내에 있는지 확인 후 Map에 추가합니다.
                     if (bfRow >= 0 && bfRow < battlefieldRows && bfCol >= 0 && bfCol < battlefieldCols) {
                         const key = `${bfRow},${bfCol}`;
                         if (!battlefieldPlacementMap.has(key)) battlefieldPlacementMap.set(key, []);
@@ -649,6 +877,7 @@
                 }
             });
 
+            // Map에 매핑된 데이터를 기반으로 실제 전장 셀에 소환수들을 배치합니다.
             battlefieldPlacementMap.forEach((summonersInCell, key) => {
                 const [rowStr, colStr] = key.split(',');
                 const bfRow = parseInt(rowStr);
@@ -656,83 +885,100 @@
                 const battlefieldIndex = bfRow * battlefieldCols + bfCol;
                 const bfCell = battlefieldCells[battlefieldIndex];
 
-                // 셀에 있는 소환수 수에 따라 battlefield-cell의 그리드 템플릿 변경
+                // 셀에 있는 소환수 수에 따라 battlefield-cell의 내부 그리드 템플릿을 동적으로 변경합니다.
                 if (summonersInCell.length === 1) {
-                    bfCell.classList.remove('multi-summoners'); // 1x1 그리드 유지
-                    bfCell.style.gridTemplateColumns = '1fr'; 
+                    bfCell.classList.remove('multi-summoners'); // 2개 이상일 때 적용되는 클래스 제거
+                    bfCell.classList.remove('three-plus'); // 3개 이상일 때 적용되는 클래스 제거
+                    bfCell.style.gridTemplateColumns = '1fr'; // 1x1 그리드 유지
                     bfCell.style.gridTemplateRows = '1fr';
                 } else if (summonersInCell.length === 2) {
-                    bfCell.classList.add('multi-summoners'); // 2열 1행 그리드 활성화
-                    bfCell.style.gridTemplateColumns = 'repeat(2, 1fr)'; /* 가로 2분할 */
-                    bfCell.style.gridTemplateRows = '1fr'; /* 세로는 1칸 */
+                    bfCell.classList.add('multi-summoners'); // 2개일 때: 가로 2분할, 세로 1칸 그리드 활성화
+                    bfCell.classList.remove('three-plus'); // 3개 이상일 때 적용되는 클래스 제거
+                    bfCell.style.gridTemplateColumns = 'repeat(2, 1fr)'; 
+                    bfCell.style.gridTemplateRows = '1fr'; 
                 } else { /* summonersInCell.length >= 3 */
-                    bfCell.classList.add('multi-summoners'); // 2x2 그리드 활성화
-                    bfCell.style.gridTemplateColumns = 'repeat(2, 1fr)'; /* 가로 2분할 */
-                    bfCell.style.gridTemplateRows = 'repeat(2, 1fr)'; /* 세로 2분할 */
+                    bfCell.classList.add('multi-summoners'); // 3개 이상일 때: 가로 2분할, 세로 2분할 그리드 활성화
+                    bfCell.classList.add('three-plus'); // 2x2 그리드 클래스 추가
+                    bfCell.style.gridTemplateColumns = 'repeat(2, 1fr)'; 
+                    bfCell.style.gridTemplateRows = 'repeat(2, 1fr)'; 
                 }
 
-                // 소환수들이 셀 내 그리드에 배치될 위치를 정의
-                // 1마리: (1,1), 2마리: (1,1), (1,2), 3마리: (1,1), (1,2), (2,1), 4마리: (1,1), (1,2), (2,1), (2,2)
-                const positions2x2 = [[1,1], [1,2], [2,1], [2,2]]; // 2x2 그리드용 위치
-
+                // 2x2 그리드 내에서 소환수 배치 위치를 정의합니다 (좌상, 우상, 좌하, 우하).
+                const positions2x2 = [[1,1], [1,2], [2,1], [2,2]]; 
+                
+                // 해당 셀에 배치될 소환수들을 순회하며 실제 DOM 요소를 생성하고 추가합니다.
                 summonersInCell.forEach((summonerElement, index) => {
-                    if (index < positions2x2.length) { // 최대 4마리까지 고려
+                    // 최대 4마리까지만 표시합니다 (2x2 그리드 최대).
+                    if (index < positions2x2.length) { 
                         const bfSummoner = document.createElement('div');
-                        bfSummoner.classList.add('battlefield-summoner'); 
+                        bfSummoner.classList.add('battlefield-summoner'); // 전장 소환수 기본 스타일
+                        // 소환수 진영에 따라 배경색 클래스 추가
                         bfSummoner.classList.add(summonerElement.dataset.isOpponent === 'true' ? 'opponent-summoner' : 'my-summoner');
                         
-                        // 소환수 수에 따라 다른 크기 클래스 부여 및 위치 지정
+                        // 소환수 수에 따라 다른 크기 클래스 부여 및 내부 그리드 위치 지정
                         if (summonersInCell.length === 1) {
-                            bfSummoner.classList.add('single-summoner');
-                            // 1x1 그리드에서 기본값으로 셀 전체를 차지
+                            bfSummoner.classList.add('single-summoner'); // 1마리일 때 큰 크기
                             bfSummoner.style.gridRowStart = '1';
                             bfSummoner.style.gridColumnStart = '1';
                         } else if (summonersInCell.length === 2) {
-                            bfSummoner.classList.add('multi-summoner');
-                            // 2마리일 때 가로로 나란히 (1열1행, 1열2행)
-                            bfSummoner.style.gridRowStart = '1';
-                            bfSummoner.style.gridColumnStart = index + 1; 
-                        } else { // 3마리 이상은 2x2 그리드로
+                            bfSummoner.classList.add('multi-summoner'); // 2마리일 때 중간 크기
+                            bfSummoner.style.gridRowStart = '1'; // 1행 고정
+                            bfSummoner.style.gridColumnStart = index + 1; // 1열, 2열에 배치 (가로로 나란히)
+                        } else { // 3마리 이상: 2x2 그리드에 배치될 때 작은 크기
                             bfSummoner.classList.add('multi-summoner');
                             bfSummoner.style.gridRowStart = positions2x2[index][0];
                             bfSummoner.style.gridColumnStart = positions2x2[index][1];
                         }
 
-                        bfSummoner.innerHTML = `<img src="${imagePath}${summonerElement.dataset.summonerName}${imageExtension}" alt="${summonerElement.dataset.summonerName}">`;
+                        // 이미지 태그를 생성하여 소환수 내부에 추가합니다.
+                        const img = document.createElement('img');
+                        img.src = `${imagePath}${summonerElement.dataset.summonerName}${imageExtension}`;
+                        img.alt = summonerElement.dataset.summonerName;
+                        bfSummoner.appendChild(img);
                         
+                        // 리더 소환수에게 왕관 마커를 추가합니다.
                         if (summonerElement.dataset.isLeader === 'true') {
                             const leaderMarker = document.createElement('span');
                             leaderMarker.classList.add('battlefield-leader-marker');
                             leaderMarker.textContent = '👑';
                             bfSummoner.appendChild(leaderMarker);
                         }
-                        bfCell.appendChild(bfSummoner);
+                        bfCell.appendChild(bfSummoner); // 최종적으로 전장 셀에 소환수 추가
                     }
                 });
             });
         }
 
+        /**
+         * 지정된 배치 그리드에서 현재 배치된 소환수들의 데이터를 수집합니다.
+         * 각 소환수의 이름, 리더 여부, 원래 그리드 내 상대적 위치 등을 포함합니다.
+         * @param {HTMLElement} gridElement - 데이터를 수집할 그리드 DOM 요소 (myGrid 또는 opponentGrid)
+         * @returns {Array<Object>} - 배치된 소환수들의 정보 객체 배열
+         */
         function collectSummonersData(gridElement) {
             const placedSummonersData = [];
-            gridElement.querySelectorAll('.grid-cell').forEach((gridCell, gridIndex) => {
-                if (gridCell.firstChild) {
-                    const summoner = gridCell.firstChild; 
+            gridElement.querySelectorAll('.grid-cell').forEach(gridCell => { 
+                if (gridCell.firstChild) { // 셀에 소환수(클론)가 있다면
+                    const summoner = gridCell.firstChild; // 클론 소환수 엘리먼트
                     const name = summoner.dataset.summonerName;
                     const isLeader = summoner.dataset.isLeader === 'true';
-                    const originalRow = Math.floor(gridIndex / grid5x5Size);
-                    const originalCol = gridIndex % grid5x5Size;
+                    const gridIndex = parseInt(gridCell.dataset.index); // 셀의 인덱스
+                    const originalRow = Math.floor(gridIndex / grid5x5Size); // 배치 그리드 내 원래 행
+                    const originalCol = gridIndex % grid5x5Size; // 배치 그리드 내 원래 열
                     placedSummonersData.push({ summoner, name, isLeader, originalRow, originalCol });
                 }
             });
             return placedSummonersData;
         }
 
-        // 초기화
-        createBattlefieldGrid();
-        createGrid(myGrid, 'my');
-        createGrid(opponentGrid, 'opponent');
-        createCommonSummonerPool();
-        updateBattlefield();
+        // --- 초기화 로직 ---
+        // 웹 페이지 로드 시 필요한 모든 그리드와 소환수 풀을 생성하고, 초기 UI를 설정합니다.
+        createBattlefieldGrid(); // 전장 그리드를 생성합니다.
+        createGrid(myGrid, 'my'); // 나의 배치 그리드를 생성합니다.
+        createGrid(opponentGrid, 'opponent'); // 상대편 배치 그리드를 생성합니다.
+        createCommonSummonerPool(); // 모든 소환수를 포함하는 공용 풀을 생성합니다.
+        updatePlacementCountDisplays(); // 초기 배치 수 UI (0/15)를 업데이트합니다.
+        updateBattlefield(); // 초기 전장 그리드 상태를 업데이트합니다 (시작 시에는 비어 있음).
     </script>
 </body>
 </html>
