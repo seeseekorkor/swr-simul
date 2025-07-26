@@ -283,6 +283,157 @@
             justify-content: center; /* 중앙 정렬 */
             margin-bottom: 20px;
         }
+
+        /* 제어 버튼 그룹 스타일 */
+        .control-buttons {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; /* 버튼이 많아지면 줄바꿈 */
+            gap: 15px;
+            align-items: center; /* 수직 정렬 */
+            justify-content: center; /* 중앙 정렬 */
+            width: 1000px; /* 전체 너비 */
+            max-width: 100%;
+        }
+        .control-buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+            flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+        }
+        .control-buttons button:hover {
+            background-color: #0056b3;
+        }
+        .control-buttons button.clear-button {
+            background-color: #dc3545;
+        }
+        .control-buttons button.clear-button:hover {
+            background-color: #c82333;
+        }
+
+        /* 편성 선택 버튼 컨테이너 스타일 */
+        .arrangement-selection {
+            display: flex;
+            flex-wrap: nowrap; /* 변경: 줄바꿈 대신 스크롤 */
+            overflow-x: auto;  /* 내용이 넘치면 가로 스크롤바 표시 */
+            gap: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            flex-grow: 1; /* 남은 공간을 채우도록 성장 */
+            justify-content: flex-start; /* 좌측 정렬 */
+            align-items: center;
+            min-width: 200px; /* 최소 너비 설정 */
+        }
+        /* 편성 선택 버튼 개별 스타일 */
+        .arrangement-selection button {
+            padding: 8px 12px;
+            font-size: 14px;
+            background-color: #e9ecef;
+            color: #495057;
+            border: 1px solid #adb5bd;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+        }
+        .arrangement-selection button:hover {
+            background-color: #dee2e6;
+        }
+        .arrangement-selection button.active-arrangement {
+            background-color: #28a745; /* 활성화된 편성 색상 (초록색) */
+            color: white;
+            border-color: #218838;
+            font-weight: bold;
+        }
+
+        /* 편성 추가 버튼 (플러스 버튼) 스타일 */
+        .arrangement-selection button.add-arrangement-button {
+            background-color: #6c757d; /* 회색 배경 */
+            color: white;
+            font-weight: bold;
+            font-size: 18px; /* 크게 */
+            padding: 5px 10px; /* 패딩 조정 */
+        }
+        .arrangement-selection button.add-arrangement-button:hover {
+            background-color: #5a6268;
+        }
+        /* 편성 이름 변경 버튼 */
+        .arrangement-selection .rename-arrangement-button {
+            background-color: #17a2b8; /* 청록색 */
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            line-height: 1;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 4px; /* 왼쪽 버튼과의 간격 */
+            border: none;
+        }
+        .arrangement-selection .rename-arrangement-button:hover {
+            background-color: #138496;
+        }
+        /* 편성 삭제 버튼 (편성 버튼 옆에 작은 X 버튼) */
+        .arrangement-selection .delete-arrangement-button {
+            background-color: #dc3545; /* 빨간색 */
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            width: 18px; /* 작게 */
+            height: 18px;
+            line-height: 1;
+            border-radius: 50%; /* 원형 */
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 4px; /* 왼쪽 버튼과의 간격 */
+            border: none;
+            z-index: 5; 
+            position: relative;
+        }
+        .arrangement-selection .delete-arrangement-button:hover {
+            background-color: #c82333;
+        }
+        /* 편성 버튼과 삭제 버튼을 묶는 컨테이너 */
+        .arrangement-item {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0; /* 아이템이 줄어들지 않도록 */
+        }
+
+        /* 토스트 메시지 스타일 */
+        #toast-message {
+            visibility: hidden; /* 기본적으로 숨김 */
+            min-width: 250px;
+            background-color: rgba(51, 51, 51, 0.9); /* 반투명 검정 배경 */
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed; /* 고정 위치 */
+            z-index: 9999; /* 다른 요소 위에 표시 */
+            left: 50%; /* 가로 중앙 */
+            top: 50%; /* 세로 중앙 (translate로 정확한 중앙 조정) */
+            transform: translate(-50%, -50%); /* 정확한 중앙 정렬 */
+            opacity: 0; /* 초기 투명도 */
+            transition: opacity 0.5s, visibility 0.5s; /* 부드러운 나타남/사라짐 효과 */
+        }
+        #toast-message.show {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -308,11 +459,24 @@
         </div>
     </div>
 
+    <div class="control-buttons">
+        <div class="arrangement-selection" id="arrangement-buttons-container">
+            <!-- 편성 버튼들이 여기에 동적으로 생성될 것입니다 -->
+            <button class="add-arrangement-button" id="add-arrangement-button-id">+</button>
+        </div>
+        <button id="save-arrangement-button">현재 편성 저장</button>
+        <button id="clear-current-arrangement-button">현재 편성 비우기</button>
+        <button id="clear-all-arrangements-button" class="clear-button">모든 편성 초기화</button>
+    </div>
+
     <hr>
 
     <h3>소환수 목록 (풀에서 드래그하여 배치)</h3>
     <div id="common-summoners-pool" class="summoners-pool">
         </div>
+
+    <!-- 토스트 메시지 영역 -->
+    <div id="toast-message"></div>
 
     <script>
         // DOM 요소에 대한 참조를 미리 가져와서 사용합니다.
@@ -322,10 +486,14 @@
         const battlefieldGrid = document.getElementById('battlefield-grid');
         const myGridCountDisplay = document.getElementById('my-grid-count');
         const opponentGridCountDisplay = document.getElementById('opponent-grid-count');
+        const arrangementButtonsContainer = document.getElementById('arrangement-buttons-container');
+        const addArrangementButton = document.getElementById('add-arrangement-button-id'); // + 버튼 참조 추가
+        const toastMessage = document.getElementById('toast-message'); // 토스트 메시지 DOM 추가
 
         // 게임의 전반적인 설정을 위한 상수들
         const grid5x5Size = 5; // 배치 그리드의 크기 (5x5 셀)
         const maxSummoners = 15; // 각 진영이 배치할 수 있는 최대 소환수 수
+        const maxArrangements = 10; // 최대 편성 슬롯 개수
 
         // 전장 그리드의 크기 설정
         const battlefieldCols = 17; // 전장 그리드의 열 개수
@@ -355,9 +523,22 @@
         let myLeaderSummoner = null;
         let opponentLeaderSummoner = null;
 
+        // 현재 활성화된 편성 번호
+        let currentArrangementId = 1; 
+        // 편성 목록 (예: [1, 2, 3])
+        let availableArrangementIds = [];
+        // 편성 이름 목록 (예: { "1": "공격덱" })
+        let arrangementNames = {};
+
+        // 배치 변경 여부 플래그
+        let isDirty = false;
+
         // 소환수 이미지 파일의 기본 경로와 확장자를 정의합니다.
         const imagePath = 'summoner_images/'; // 예: 'summoner_images/' 폴더에 이미지가 있다고 가정
         const imageExtension = '.png'; // 모든 이미지가 PNG 형식이라고 가정
+
+        // 토스트 메시지 타임아웃을 관리하기 위한 변수
+        let toastTimeout;
 
         /**
          * 5x5 크기의 배치 그리드 셀들을 동적으로 생성하고 초기화합니다.
@@ -366,6 +547,7 @@
          * @param {string} gridType - 이 그리드가 'my' (나의 진영) 또는 'opponent' (상대편 진영) 중 무엇인지 구분합니다.
          */
         function createGrid(gridElement, gridType) {
+            gridElement.innerHTML = ''; // 기존 셀들을 초기화
             for (let i = 0; i < grid5x5Size * grid5x5Size; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('grid-cell');
@@ -382,6 +564,7 @@
          * 전장 셀의 중앙 공유 영역에 특별한 배경 스타일을 적용합니다.
          */
         function createBattlefieldGrid() {
+            battlefieldGrid.innerHTML = ''; // 기존 셀들을 초기화
             for (let i = 0; i < battlefieldCols * battlefieldRows; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('battlefield-cell');
@@ -399,6 +582,7 @@
          * 각 소환수는 드래그 가능하며, 풀의 소환수에게는 리더/제거 버튼이 없습니다.
          */
         function createCommonSummonerPool() {
+            commonSummonersPool.innerHTML = ''; // 기존 풀 내용을 초기화
             for (let i = 0; i < summonerNames.length; i++) { 
                 const summoner = document.createElement('div');
                 summoner.classList.add('summoner', 'summoner-draggable'); // 기본 스타일 및 드래그 가능 스타일
@@ -546,6 +730,7 @@
                 updateLeaderMarkers();
                 updatePlacementCountDisplays(); // N/15 카운트 업데이트
                 updateBattlefield(); // 전장 그리드 업데이트
+                isDirty = true; // 변경사항 발생
                 return; // 함수 종료
             }
             
@@ -556,7 +741,7 @@
             if (draggedIsPoolOriginal) { 
                 const currentPlacedCount = willBeOpponent ? opponentPlacedSummoners : myPlacedSummoners;
                 if (currentPlacedCount >= maxSummoners) { // 해당 진영의 최대 배치 수 초과 확인
-                    alert(`더 이상 소환수를 배치할 수 없습니다. (최대 ${maxSummoners}마리)`);
+                    showToast(`더 이상 소환수를 배치할 수 없습니다. (최대 ${maxSummoners}마리)`);
                     draggedSummoner.style.opacity = '1';
                     draggedSummoner.removeAttribute('data-is-pool-original');
                     draggedSummoner = null;
@@ -567,7 +752,7 @@
                 const targetGrid = targetGridType === 'my' ? myGrid : opponentGrid;
                 const existingSummonerNamesInGrid = Array.from(targetGrid.querySelectorAll('.summoner.is-placed')).map(s => s.dataset.summonerName);
                 if (existingSummonerNamesInGrid.includes(draggedSummoner.dataset.summonerName)) {
-                    alert(`"${draggedSummoner.dataset.summonerName}" 소환수는 이미 이 그리드에 배치되어 있습니다.`);
+                    showToast(`"${draggedSummoner.dataset.summonerName}" 소환수는 이미 이 그리드에 배치되어 있습니다.`);
                     draggedSummoner.style.opacity = '1';
                     draggedSummoner.removeAttribute('data-is-pool-original');
                     draggedSummoner = null;
@@ -616,7 +801,7 @@
                         }
                         // 교환이므로 배치된 소환수 총 개수에는 변경 없음.
                     } else { // 다른 진영 소환수와는 교환 불가
-                        alert('다른 진영의 소환수와는 교환할 수 없습니다.');
+                        showToast('다른 진영의 소환수와는 교환할 수 없습니다.');
                         // 드래그한 소환수(summonerToPlace)를 원래 위치(originalDragSourceCell)로 복구
                         if (originalDragSourceCell) { // dragStart 시 원래 셀이 저장되어 있다면
                              originalDragSourceCell.appendChild(summonerToPlace);
@@ -664,6 +849,7 @@
             updateLeaderMarkers();
             updatePlacementCountDisplays(); // N/15 카운트 업데이트
             updateBattlefield(); // 전장 그리드 업데이트
+            isDirty = true; // 변경사항 발생
         }
 
         /**
@@ -681,6 +867,7 @@
                 updateLeaderMarkers();
                 updatePlacementCountDisplays(); // N/15 카운트 업데이트
                 updateBattlefield(); // 전장 그리드 업데이트
+                isDirty = true; // 변경사항 발생
             }
         }
 
@@ -743,6 +930,7 @@
             // 리더 상태 변경 후 UI 업데이트
             updateLeaderMarkers(); // 리더 마커(왕관/L) 업데이트
             updateBattlefield(); // 전장 그리드 업데이트 (리더 위치 반영)
+            isDirty = true; // 변경사항 발생
         }
 
         /**
@@ -966,20 +1154,503 @@
                     const gridIndex = parseInt(gridCell.dataset.index); // 셀의 인덱스
                     const originalRow = Math.floor(gridIndex / grid5x5Size); // 배치 그리드 내 원래 행
                     const originalCol = gridIndex % grid5x5Size; // 배치 그리드 내 원래 열
-                    placedSummonersData.push({ summoner, name, isLeader, originalRow, originalCol });
+                    placedSummonersData.push({ summoner, name, isLeader, originalRow, originalCol, gridIndex });
                 }
             });
             return placedSummonersData;
         }
 
+        /**
+         * 현재 활성화된 편성에 배치 상태를 저장합니다.
+         */
+        function saveArrangement() {
+            const myData = collectSummonersData(myGrid).map(s => ({
+                name: s.name,
+                isLeader: s.isLeader,
+                gridIndex: s.gridIndex
+            }));
+            const opponentData = collectSummonersData(opponentGrid).map(s => ({
+                name: s.name,
+                isLeader: s.isLeader,
+                gridIndex: s.gridIndex
+            }));
+
+            let allArrangementsData = {};
+            try {
+                const storedData = localStorage.getItem('summonerAllArrangements');
+                if (storedData) {
+                    allArrangementsData = JSON.parse(storedData);
+                }
+            } catch (e) {
+                console.error("저장된 전체 편성 데이터를 파싱하는 중 오류 발생:", e);
+            }
+
+            // 현재 편성에 데이터 저장
+            allArrangementsData[`arrangement_${currentArrangementId}`] = {
+                myPlacement: myData,
+                opponentPlacement: opponentData
+            };
+            
+            // 사용 가능한 편성 ID 목록 업데이트 및 저장
+            if (!availableArrangementIds.includes(currentArrangementId)) {
+                availableArrangementIds.push(currentArrangementId);
+                availableArrangementIds.sort((a, b) => a - b); // 오름차순 정렬
+                localStorage.setItem('availableArrangementIds', JSON.stringify(availableArrangementIds));
+            }
+            
+            try {
+                localStorage.setItem('summonerAllArrangements', JSON.stringify(allArrangementsData));
+                isDirty = false; // 저장 후 clean 상태로 변경
+                showToast(`현재 배치가 '${arrangementNames[currentArrangementId] || `편성 ${currentArrangementId}`}'에 성공적으로 저장되었습니다!`);
+            } catch (e) {
+                showToast(`편성 ${currentArrangementId}에 저장 실패: ` + e);
+            }
+        }
+
+        /**
+         * 지정된 ID의 편성 상태를 불러옵니다.
+         * @param {number} arrangementId - 불러올 편성의 ID
+         */
+        function loadArrangement(arrangementId) {
+            if (isDirty) {
+                if (!confirm('저장되지 않은 변경사항이 있습니다. 정말 다른 편성을 불러오시겠습니까? 이 작업은 저장되지 않은 변경사항을 되돌릴 수 없습니다.')) {
+                    return;
+                }
+            }
+
+            currentArrangementId = arrangementId; // 현재 활성화된 편성 ID 업데이트
+            updateArrangementButtonActiveState(); // 버튼 활성화 상태 업데이트
+
+            let allArrangementsData = {};
+            try {
+                const storedData = localStorage.getItem('summonerAllArrangements');
+                if (storedData) {
+                    allArrangementsData = JSON.parse(storedData);
+                }
+            } catch (e) {
+                console.error("저장된 전체 편성 데이터를 파싱하는 중 오류 발생:", e);
+                showToast('저장된 편성 데이터를 불러오는 중 오류가 발생했습니다.');
+                return;
+            }
+
+            const arrangementData = allArrangementsData[`arrangement_${arrangementId}`];
+
+            // 현재 배치된 모든 소환수 제거 (초기화)
+            clearCurrentDisplay(true); // isDirty 플래그를 변경하지 않고 화면만 초기화
+
+            if (!arrangementData || (!arrangementData.myPlacement && !arrangementData.opponentPlacement)) {
+                isDirty = false; // 빈 편성을 불러왔으므로 clean 상태
+                return;
+            }
+
+            const myLoadedData = arrangementData.myPlacement || [];
+            const opponentLoadedData = arrangementData.opponentPlacement || [];
+
+            // 나의 소환수 배치
+            myLoadedData.forEach(data => {
+                const targetCell = myGrid.querySelector(`.grid-cell[data-index="${data.gridIndex}"]`);
+                if (targetCell) {
+                    const originalSummoner = commonSummonersPool.querySelector(`[data-summoner-name="${data.name}"]`);
+                    if (originalSummoner) { // summoner_images 폴더에 해당 이미지가 없을 경우를 대비
+                        const newSummoner = originalSummoner.cloneNode(true);
+                        newSummoner.classList.remove('summoner-draggable');
+                        newSummoner.classList.add('is-placed');
+                        newSummoner.removeAttribute('id');
+                        newSummoner.setAttribute('draggable', true);
+                        newSummoner.addEventListener('dragstart', dragStart);
+                        newSummoner.dataset.isLeader = data.isLeader.toString();
+                        newSummoner.dataset.isOpponent = 'false'; // 나의 소환수
+                        targetCell.appendChild(newSummoner);
+                        addSummonerButtons(newSummoner); // 버튼 추가
+
+                        // 로드 시점에 리더 참조 업데이트
+                        if (data.isLeader) {
+                            myLeaderSummoner = newSummoner;
+                        }
+                        myPlacedSummoners++;
+                    } else {
+                        console.warn(`[편성 불러오기] 소환수 이미지를 찾을 수 없습니다: ${data.name}`);
+                    }
+                }
+            });
+
+            // 상대편 소환수 배치
+            opponentLoadedData.forEach(data => {
+                const targetCell = opponentGrid.querySelector(`.grid-cell[data-index="${data.gridIndex}"]`);
+                if (targetCell) {
+                    const originalSummoner = commonSummonersPool.querySelector(`[data-summoner-name="${data.name}"]`);
+                    if (originalSummoner) { // summoner_images 폴더에 해당 이미지가 없을 경우를 대비
+                        const newSummoner = originalSummoner.cloneNode(true);
+                        newSummoner.classList.remove('summoner-draggable');
+                        newSummoner.classList.add('is-placed');
+                        newSummoner.removeAttribute('id');
+                        newSummoner.setAttribute('draggable', true);
+                        newSummoner.addEventListener('dragstart', dragStart);
+                        newSummoner.dataset.isLeader = data.isLeader.toString();
+                        newSummoner.dataset.isOpponent = 'true'; // 상대편 소환수
+                        targetCell.appendChild(newSummoner);
+                        addSummonerButtons(newSummoner); // 버튼 추가
+
+                        // 로드 시점에 리더 참조 업데이트
+                        if (data.isLeader) {
+                            opponentLeaderSummoner = newSummoner;
+                        }
+                        opponentPlacedSummoners++;
+                    } else {
+                        console.warn(`[편성 불러오기] 소환수 이미지를 찾을 수 없습니다: ${data.name}`);
+                    }
+                }
+            });
+
+            updateLeaderMarkers();
+            updatePlacementCountDisplays();
+            updateBattlefield();
+            isDirty = false; // 새로운 편성을 불러왔으므로 clean 상태로 초기화
+        }
+
+        /**
+         * 현재 화면에 표시된 모든 배치 그리드를 초기화합니다.
+         * @param {boolean} silent - true일 경우 isDirty 플래그를 변경하지 않음 (편성 로드 시 내부 사용)
+         */
+        function clearCurrentDisplay(silent = false) {
+            const wasEmpty = myPlacedSummoners === 0 && opponentPlacedSummoners === 0;
+
+            // 나의 그리드 소환수 제거
+            myGrid.querySelectorAll('.grid-cell').forEach(cell => {
+                if (cell.firstChild) cell.removeChild(cell.firstChild);
+            });
+            myPlacedSummoners = 0;
+            myLeaderSummoner = null;
+
+            // 상대편 그리드 소환수 제거
+            opponentGrid.querySelectorAll('.grid-cell').forEach(cell => {
+                if (cell.firstChild) cell.removeChild(cell.firstChild);
+            });
+            opponentPlacedSummoners = 0;
+            opponentLeaderSummoner = null;
+
+            // UI 업데이트
+            updateLeaderMarkers();
+            updatePlacementCountDisplays();
+            updateBattlefield();
+
+            if (!silent && !wasEmpty) {
+                isDirty = true; // 비어있지 않은 상태에서 클리어했다면 변경사항으로 간주
+            }
+        }
+
+        /**
+         * 현재 활성화된 편성의 저장된 데이터를 지웁니다.
+         */
+        function clearCurrentArrangementData() {
+            if (isDirty) {
+                if (!confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 현재 편성을 비우시겠습니까?')) {
+                    return;
+                }
+            } else {
+                if (!confirm(`정말 현재 편성 '${arrangementNames[currentArrangementId] || `편성 ${currentArrangementId}`}'의 화면 배치를 모두 비우시겠습니까?`)) {
+                    return;
+                }
+            }
+            clearCurrentDisplay();
+        }
+
+        /**
+         * localStorage의 모든 편성 데이터를 지우고, 화면의 배치도 초기화합니다.
+         */
+        function clearAllArrangements() {
+            if (isDirty) {
+                if (!confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 모든 편성을 초기화하시겠습니까?')) {
+                    return;
+                }
+            } else {
+                if (!confirm('정말 모든 저장된 편성 슬롯을 초기화하고 현재 배치도 지우시겠습니까?')) {
+                    return;
+                }
+            }
+
+            try {
+                localStorage.removeItem('summonerAllArrangements');
+                localStorage.removeItem('availableArrangementIds');
+                localStorage.removeItem('summonerArrangementNames');
+                localStorage.removeItem('lastActiveArrangementId');
+                
+                availableArrangementIds = [];
+                arrangementNames = {};
+                
+                showToast('모든 저장된 편성 슬롯이 초기화되었습니다!');
+                clearCurrentDisplay(true); // 화면 초기화 (isDirty는 false로)
+                renderArrangementButtons(); 
+                addInitialArrangement();
+                isDirty = false;
+
+            } catch (e) {
+                showToast('모든 저장된 편성 초기화에 실패했습니다: ' + e);
+            }
+        }
+
+        /**
+         * 편성 선택 버튼의 활성화 상태를 업데이트합니다.
+         */
+        function updateArrangementButtonActiveState() {
+            document.querySelectorAll('.arrangement-button').forEach(button => {
+                if (parseInt(button.dataset.arrangementId) === currentArrangementId) {
+                    button.classList.add('active-arrangement');
+                } else {
+                    button.classList.remove('active-arrangement');
+                }
+            });
+        }
+
+        /**
+         * 새로운 편성 슬롯을 추가합니다.
+         */
+        function addArrangement() {
+            if (availableArrangementIds.length >= maxArrangements) {
+                showToast(`최대 편성 개수(${maxArrangements}개)에 도달했습니다.`);
+                return;
+            }
+
+            if (isDirty) {
+                if (!confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 새로운 편성을 추가하시겠습니까?')) {
+                    return;
+                }
+            }
+
+            // 새로운 편성 ID 찾기 (가장 작은 사용 가능한 양의 정수)
+            let newArrangementId = 1;
+            while (availableArrangementIds.includes(newArrangementId)) {
+                newArrangementId++;
+            }
+            
+            availableArrangementIds.push(newArrangementId);
+            availableArrangementIds.sort((a, b) => a - b); // 오름차순 정렬
+            localStorage.setItem('availableArrangementIds', JSON.stringify(availableArrangementIds));
+            
+            renderArrangementButtons(); // 버튼 UI 갱신
+            loadArrangement(newArrangementId); 
+            showToast(`새로운 편성 ${newArrangementId}이 추가되었습니다.`);
+        }
+
+        /**
+         * 편성 버튼들을 UI에 렌더링합니다. (추가/삭제 시 호출)
+         */
+        function renderArrangementButtons() {
+            const existingArrangementItems = arrangementButtonsContainer.querySelectorAll('.arrangement-item');
+            existingArrangementItems.forEach(item => item.remove());
+
+            availableArrangementIds.forEach(id => {
+                const arrangementItem = document.createElement('div');
+                arrangementItem.classList.add('arrangement-item');
+
+                const button = document.createElement('button');
+                button.classList.add('arrangement-button');
+                button.dataset.arrangementId = id;
+                button.textContent = arrangementNames[id] || `편성 ${id}`;
+                button.addEventListener('click', () => loadArrangement(id));
+                arrangementItem.appendChild(button);
+
+                // 이름 변경 버튼 추가
+                const renameButton = document.createElement('button');
+                renameButton.classList.add('rename-arrangement-button');
+                renameButton.innerHTML = '✏️';
+                renameButton.title = '이름 변경';
+                renameButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    renameArrangement(id);
+                });
+                arrangementItem.appendChild(renameButton);
+
+                // 삭제 버튼 추가
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-arrangement-button');
+                deleteButton.textContent = 'X';
+                deleteButton.title = '편성 삭제';
+                deleteButton.dataset.arrangementIdToDelete = id;
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    deleteArrangement(id);
+                });
+                arrangementItem.appendChild(deleteButton);
+                
+                arrangementButtonsContainer.insertBefore(arrangementItem, addArrangementButton);
+            });
+
+            updateArrangementButtonActiveState();
+        }
+
+        /**
+         * 편성의 이름을 변경합니다.
+         * @param {number} arrangementId - 이름을 변경할 편성의 ID
+         */
+        function renameArrangement(arrangementId) {
+            const currentName = arrangementNames[arrangementId] || `편성 ${arrangementId}`;
+            const newName = prompt('새로운 편성 이름을 입력하세요:', currentName);
+
+            if (newName && newName.trim() !== '' && newName.trim() !== currentName) {
+                arrangementNames[arrangementId] = newName.trim();
+                localStorage.setItem('summonerArrangementNames', JSON.stringify(arrangementNames));
+                showToast('편성 이름이 변경되었습니다.');
+                renderArrangementButtons(); // 버튼 UI 갱신
+                isDirty = true; // 이름 변경도 저장 필요한 변경사항으로 간주
+            }
+        }
+
+        /**
+         * 특정 편성 ID의 데이터를 삭제합니다.
+         * @param {number} arrangementIdToDelete - 삭제할 편성의 ID
+         */
+        function deleteArrangement(arrangementIdToDelete) {
+            const arrangementName = arrangementNames[arrangementIdToDelete] || `편성 ${arrangementIdToDelete}`;
+            if (!confirm(`정말 '${arrangementName}' 편성을 삭제하시겠습니까? (저장된 배치도 함께 삭제됩니다)`)) {
+                return;
+            }
+
+            // 삭제하려는 편성이 현재 활성화된 편성이고, 변경사항이 있는 경우 한 번 더 확인
+            if (isDirty && currentArrangementId === arrangementIdToDelete) {
+                if (!confirm('현재 편성에 저장되지 않은 변경사항이 있습니다. 저장하지 않고 삭제하시겠습니까?')) {
+                    return;
+                }
+            }
+
+            // 1. ID 목록에서 제거하고 저장
+            availableArrangementIds = availableArrangementIds.filter(id => id !== arrangementIdToDelete);
+            localStorage.setItem('availableArrangementIds', JSON.stringify(availableArrangementIds));
+
+            // 2. 이름 목록에서 제거하고 저장
+            if (arrangementNames[arrangementIdToDelete]) {
+                delete arrangementNames[arrangementIdToDelete];
+                localStorage.setItem('summonerArrangementNames', JSON.stringify(arrangementNames));
+            }
+
+            // 3. 배치 데이터에서 제거하고 저장
+            let allArrangementsData = {};
+            try {
+                const storedData = localStorage.getItem('summonerAllArrangements');
+                if (storedData) {
+                    allArrangementsData = JSON.parse(storedData);
+                    if (allArrangementsData[`arrangement_${arrangementIdToDelete}`]) {
+                        delete allArrangementsData[`arrangement_${arrangementIdToDelete}`];
+                        localStorage.setItem('summonerAllArrangements', JSON.stringify(allArrangementsData));
+                    }
+                }
+            } catch (e) {
+                console.error("저장된 전체 편성 데이터를 파싱하는 중 오류 발생:", e);
+                showToast('저장된 데이터를 읽는 중 오류가 발생했습니다.');
+                return; // 여기서 중단
+            }
+
+            showToast(`'${arrangementName}' 편성이 성공적으로 삭제되었습니다.`);
+            
+            renderArrangementButtons(); // 버튼 UI 갱신
+
+            // 삭제된 편성이 현재 활성화된 편성이었다면 다른 편성으로 전환
+            if (currentArrangementId === arrangementIdToDelete) {
+                isDirty = false; // 삭제했으므로 현재 상태는 clean
+                if (availableArrangementIds.length > 0) {
+                    loadArrangement(availableArrangementIds[0]); 
+                } else {
+                    addInitialArrangement();
+                }
+            } else {
+                updateArrangementButtonActiveState();
+            }
+        }
+
+        /**
+         * 최초 로드 시 편성 1이 없으면 자동으로 생성하고 로드합니다.
+         */
+        function addInitialArrangement() {
+            if (availableArrangementIds.length === 0) {
+                availableArrangementIds = [1];
+                localStorage.setItem('availableArrangementIds', JSON.stringify(availableArrangementIds));
+                currentArrangementId = 1;
+                renderArrangementButtons();
+                loadArrangement(1);
+            }
+        }
+
+        /**
+         * 토스트 메시지를 화면 중앙에 띄우고 1초 뒤 사라지게 합니다.
+         * @param {string} message - 표시할 메시지 텍스트
+         * @param {number} duration - 메시지가 표시될 시간 (밀리초), 기본값 1000ms
+         */
+        function showToast(message, duration = 1000) {
+            clearTimeout(toastTimeout); 
+            toastMessage.textContent = message;
+            toastMessage.classList.add('show');
+            toastTimeout = setTimeout(() => {
+                toastMessage.classList.remove('show');
+            }, duration);
+        }
+
+
         // --- 초기화 로직 ---
-        // 웹 페이지 로드 시 필요한 모든 그리드와 소환수 풀을 생성하고, 초기 UI를 설정합니다.
-        createBattlefieldGrid(); // 전장 그리드를 생성합니다.
-        createGrid(myGrid, 'my'); // 나의 배치 그리드를 생성합니다.
-        createGrid(opponentGrid, 'opponent'); // 상대편 배치 그리드를 생성합니다.
-        createCommonSummonerPool(); // 모든 소환수를 포함하는 공용 풀을 생성합니다.
-        updatePlacementCountDisplays(); // 초기 배치 수 UI (0/15)를 업데이트합니다.
-        updateBattlefield(); // 초기 전장 그리드 상태를 업데이트합니다 (시작 시에는 비어 있음).
+        createBattlefieldGrid(); 
+        createGrid(myGrid, 'my'); 
+        createGrid(opponentGrid, 'opponent'); 
+        createCommonSummonerPool(); 
+
+        // 저장된 데이터 불러오기
+        const storedArrangementIds = localStorage.getItem('availableArrangementIds');
+        const storedArrangementNames = localStorage.getItem('summonerArrangementNames');
+
+        if (storedArrangementNames) {
+            try {
+                arrangementNames = JSON.parse(storedArrangementNames);
+            } catch (e) {
+                console.error("저장된 편성 이름 데이터 파싱 오류", e);
+                arrangementNames = {};
+            }
+        }
+
+        if (storedArrangementIds) {
+            try {
+                availableArrangementIds = JSON.parse(storedArrangementIds);
+                if (availableArrangementIds.length > 0) {
+                    const lastActiveArrangementId = parseInt(localStorage.getItem('lastActiveArrangementId')) || availableArrangementIds[0];
+                    currentArrangementId = availableArrangementIds.includes(lastActiveArrangementId) ? lastActiveArrangementId : availableArrangementIds[0];
+                } else {
+                    addInitialArrangement();
+                }
+            } catch (e) {
+                 console.error("저장된 편성 ID 데이터 파싱 오류", e);
+                 addInitialArrangement();
+            }
+        } else {
+            addInitialArrangement();
+        }
+        
+        addArrangementButton.addEventListener('click', addArrangement);
+
+        renderArrangementButtons();
+        
+        if (availableArrangementIds.length > 0) {
+            loadArrangement(currentArrangementId);
+        } else {
+            updatePlacementCountDisplays();
+            updateBattlefield();
+        }
+
+        // 제어 버튼 이벤트 리스너 연결
+        document.getElementById('save-arrangement-button').addEventListener('click', saveArrangement);
+        document.getElementById('clear-current-arrangement-button').addEventListener('click', clearCurrentArrangementData);
+        document.getElementById('clear-all-arrangements-button').addEventListener('click', clearAllArrangements);
+
+        // 페이지를 떠나기 전 변경사항 확인
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault(); // 표준에 따라 필요
+                e.returnValue = ''; // Chrome에서 필요
+            }
+            // 현재 활성화된 편성 ID 저장
+            if (currentArrangementId !== 0 && availableArrangementIds.length > 0) {
+                localStorage.setItem('lastActiveArrangementId', currentArrangementId.toString());
+            } else {
+                localStorage.removeItem('lastActiveArrangementId');
+            }
+        });
+
     </script>
 </body>
 </html>
