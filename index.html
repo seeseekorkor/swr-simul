@@ -733,6 +733,16 @@
                 isDirty = true; // 변경사항 발생
                 return; // 함수 종료
             }
+
+            // [BUG FIX] 풀에서 소환수를 가져올 때, 대상 셀이 이미 차있으면 드롭을 막습니다.
+            if (draggedIsPoolOriginal && targetCell.hasChildNodes()) {
+                showToast('이 셀에는 이미 소환수가 배치되어 있습니다. 빈 셀에 놓아주세요.');
+                // 드래그하던 풀의 원본 소환수는 투명도만 복구
+                draggedSummoner.style.opacity = '1';
+                draggedSummoner.removeAttribute('data-is-pool-original');
+                draggedSummoner = null;
+                return; // 여기서 함수 종료
+            }
             
             const willBeOpponent = (targetGridType === 'opponent'); // 드롭될 그리드의 진영
             let summonerToPlace = draggedSummoner; // 최종적으로 타겟 셀에 배치될 소환수 엘리먼트
